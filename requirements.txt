@@ -1,0 +1,6 @@
+fuzzywuzzy==0.18.0
+Levenshtein==0.26.1
+mutagen==1.47.0
+python-Levenshtein==0.26.1
+RapidFuzz==3.10.1
+tqdm==4.67.1
