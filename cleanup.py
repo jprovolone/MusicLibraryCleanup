@@ -8,6 +8,7 @@ import re
 from tqdm import tqdm
 from fuzzywuzzy import fuzz
 from collections import defaultdict
+import argparse
 
 def normalize_string(s):
     """Normalize string for comparison by removing special characters and converting to lowercase"""
@@ -454,18 +455,29 @@ def cleanup_empty_directories(root_dir):
     return removed_count
 
 def main():
-    input_dir = input("Please enter the path to your music directory: ").strip()
+    # Set up command line argument parser
+    parser = argparse.ArgumentParser(
+        description='Music library cleanup and organization tool'
+    )
+    parser.add_argument(
+        'directory',
+        help='Path to the music directory to process'
+    )
+    parser.add_argument(
+        '--mode',
+        choices=['demo', 'execute'],
+        required=True,
+        help='Operation mode: "demo" to show proposed changes, "execute" to perform changes'
+    )
+    
+    # Parse arguments
+    args = parser.parse_args()
+    
+    input_dir = args.directory
     
     if not os.path.exists(input_dir):
         print("Error: Directory does not exist!")
         return
-    
-    # Get mode from user
-    while True:
-        mode = input("\nSelect mode:\n1. Demo (show proposed changes)\n2. Execute (perform changes)\nEnter 1 or 2: ").strip()
-        if mode in ['1', '2']:
-            break
-        print("Invalid input. Please enter 1 or 2.")
     
     print("\nInitializing analysis...")
     proposed_moves, duplicates, skipped_files = analyze_music_directory(input_dir)
@@ -478,20 +490,11 @@ def main():
     print("\nGenerating report...")
     print_proposed_changes(proposed_moves, duplicates, skipped_files)
     
-    if mode == '1':  # Demo mode
+    if args.mode == 'demo':
         print("\nDEMO MODE - No changes were made.")
-        print("\nTo execute these changes, run the script again and select Execute mode.")
+        print("\nTo execute these changes, run again with --mode execute")
     
-    else:  # Execute mode
-        print("\nEXECUTE MODE")
-        print("WARNING: This will modify your files and directory structure.")
-        print("Make sure you have a backup before proceeding.")
-        
-        confirm = input("\nDo you want to proceed with these changes? (yes/no): ").strip().lower()
-        if confirm != 'yes':
-            print("Operation cancelled.")
-            return
-        
+    else:  # execute mode
         # Execute changes and get results
         results = execute_changes(proposed_moves, duplicates, input_dir)
         
@@ -517,6 +520,7 @@ def main():
             print(f"Cleanup complete: removed {removed_dirs} empty directories")
         else:
             print("No empty directories to clean up")
+
 
 if __name__ == "__main__":
     main()
